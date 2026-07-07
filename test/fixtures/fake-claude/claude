@@ -8,6 +8,10 @@
  * - FAKE_CLAUDE_DIR=<dir> → consumes <dir>/NNN-*.ndjson in order across
  *   invocations (counter persisted in <dir>/.counter) so multi-stage pipelines
  *   can be scripted call-by-call.
+ * - FAKE_CLAUDE_MAP=<file.json> → array of {matchAll: [substr...], scenario}
+ *   checked against stdin (the prompt); first entry whose substrings ALL match
+ *   wins. Deterministic under parallel calls, unlike DIR mode. Relative
+ *   scenario paths resolve against the map file's directory.
  * - FAKE_CLAUDE_ARGS_DIR=<dir> → records argv + stdin of each call as
  *   <dir>/call-NNN.json for flag/prompt assertions.
  *
@@ -33,6 +37,17 @@ try {
 
 function pickScenario() {
   if (process.env.FAKE_CLAUDE_SCENARIO) return process.env.FAKE_CLAUDE_SCENARIO;
+  if (process.env.FAKE_CLAUDE_MAP) {
+    const mapFile = process.env.FAKE_CLAUDE_MAP;
+    const entries = JSON.parse(fs.readFileSync(mapFile, 'utf8'));
+    for (const entry of entries) {
+      if (entry.matchAll.every((s) => stdin.includes(s))) {
+        return path.resolve(path.dirname(mapFile), entry.scenario);
+      }
+    }
+    process.stderr.write(`fake-claude: no map entry matched prompt: ${stdin.slice(0, 200)}\n`);
+    process.exit(66);
+  }
   const dir = process.env.FAKE_CLAUDE_DIR;
   if (!dir) {
     process.stderr.write('fake-claude: set FAKE_CLAUDE_SCENARIO or FAKE_CLAUDE_DIR\n');

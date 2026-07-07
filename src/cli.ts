@@ -5,6 +5,7 @@ import { fileURLToPath } from 'node:url';
 import { Command } from 'commander';
 import { runDoctor, renderDoctor } from './commands/doctor.js';
 import { runVerify, renderVerify } from './commands/verify.js';
+import { registerReview } from './commands/review.js';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const pkg = JSON.parse(readFileSync(join(here, '..', 'package.json'), 'utf8')) as { version: string };
@@ -48,6 +49,8 @@ program
     else process.stdout.write(renderVerify(report) + '\n');
     process.exitCode = report.verdict === 'FAIL' ? 1 : 0;
   });
+
+registerReview(program, progress);
 
 program.parseAsync(process.argv).catch((e: Error) => {
   process.stderr.write(`fabel: ${e.message}\n`);

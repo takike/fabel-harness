@@ -1,0 +1,2 @@
+{"type":"system","subtype":"init","session_id":"rev-t1"}
+{"type":"result","subtype":"success","is_error":false,"result":"1 finding","session_id":"rev-t1","total_cost_usd":0.04,"structured_output":{"findings":[{"summary":"Off-by-one pagination limit boundary untested","file":"src/page.ts","line":43,"failure_scenario":"limit boundary slice limit+1 has no test coverage","severity":"minor","confidence":"medium"}]}}

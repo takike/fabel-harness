@@ -1,0 +1,2 @@
+{"type":"system","subtype":"init","session_id":"fix-1"}
+{"type":"result","subtype":"success","is_error":false,"result":"Fixed the off-by-one: slice now uses limit. Test updated.","session_id":"fix-1","total_cost_usd":0.2}

@@ -1,0 +1,8 @@
+[
+  {"matchAll": ["lens: correctness", "round 1/"], "scenario": "correctness-r1.ndjson"},
+  {"matchAll": ["lens: tests", "round 1/"], "scenario": "tests-r1.ndjson"},
+  {"matchAll": ["refute", "Off-by-one"], "scenario": "skeptic-confirm.ndjson"},
+  {"matchAll": ["refute", "SQL injection"], "scenario": "skeptic-refute.ndjson"},
+  {"matchAll": ["Fix the following confirmed"], "scenario": "fix-done.ndjson"},
+  {"matchAll": ["lens:"], "scenario": "empty-findings.ndjson"}
+]
