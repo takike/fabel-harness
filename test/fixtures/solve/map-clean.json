@@ -1,0 +1,11 @@
+[
+  {"matchAll": ["Your slice: the modules"], "scenario": "explore-modules.ndjson"},
+  {"matchAll": ["Your slice: the test layout"], "scenario": "explore-tests.ndjson"},
+  {"matchAll": ["Your slice: codebase conventions"], "scenario": "explore-conventions.ndjson"},
+  {"matchAll": ["Revise the implementation plan"], "scenario": "plan-revised.ndjson"},
+  {"matchAll": ["Design the implementation plan"], "scenario": "plan.ndjson"},
+  {"matchAll": ["attack this implementation plan"], "scenario": "plan-attack-ok.ndjson"},
+  {"matchAll": ["Implement the following task"], "scenario": "implement.ndjson"},
+  {"matchAll": ["The verification failed"], "scenario": "fix-round.ndjson"},
+  {"matchAll": ["lens: correctness"], "scenario": "selfreview-empty.ndjson"}
+]

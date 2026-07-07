@@ -1,0 +1,2 @@
+{"type":"system","subtype":"init","session_id":"atk-1"}
+{"type":"result","subtype":"success","is_error":false,"result":"CONFIRMED","session_id":"atk-1","total_cost_usd":0.05,"structured_output":{"verdict":"CONFIRMED","evidence":"plan step 1 breaks src/caller.ts:7 which calls greet() positionally with a locale, not a name"}}

@@ -77,9 +77,10 @@ const scenario = pickScenario();
 if (process.env.FAKE_CLAUDE_ARGS_DIR) {
   const dir = process.env.FAKE_CLAUDE_ARGS_DIR;
   fs.mkdirSync(dir, { recursive: true });
-  const seq = fs.readdirSync(dir).filter((f) => f.startsWith('call-')).length + 1;
+  // Unique name even under parallel invocations.
+  const tag = `${Date.now()}-${process.pid}-${Math.random().toString(36).slice(2, 6)}`;
   fs.writeFileSync(
-    path.join(dir, `call-${String(seq).padStart(3, '0')}.json`),
+    path.join(dir, `call-${tag}.json`),
     JSON.stringify({ argv, stdin, scenario: path.basename(scenario), cwd: process.cwd() }, null, 2),
   );
 }

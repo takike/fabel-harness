@@ -1,6 +1,7 @@
 import { sortBySeverity } from '../engine/findings.js';
 import type { VerifiedFinding } from '../engine/skepticPool.js';
 import type { ReviewReport } from '../commands/review.js';
+import type { SolveReport } from '../commands/solve.js';
 
 /** Lead-with-outcome markdown reports. */
 
@@ -35,6 +36,40 @@ export function renderReviewReport(r: ReviewReport): string {
     lines.push('', '## Fixes');
     lines.push(r.fix.applied ? `applied — ${r.fix.detail}` : r.fix.detail);
     if (r.fix.verify) lines.push(`re-verify: ${r.fix.verify.verdict}`);
+  }
+  for (const n of r.notes) lines.push('', `note: ${n}`);
+  lines.push('', `run: .fabel/runs/${r.runId}`);
+  return lines.join('\n');
+}
+
+const SOLVE_HEADLINES: Record<SolveReport['outcome'], string> = {
+  completed: 'Completed and verified',
+  'plan-only': 'Plan ready (not implemented)',
+  'failed-verification': 'Implemented but verification FAILED',
+  'budget-exhausted': 'Stopped: budget exhausted',
+  error: 'Stopped before completion',
+};
+
+export function renderSolveReport(r: SolveReport): string {
+  const lines: string[] = [];
+  lines.push(`## ${SOLVE_HEADLINES[r.outcome]} — ${r.task} ($${r.costUsd.toFixed(2)})`);
+
+  if (r.verify?.last) {
+    lines.push('', `**Verification**: ${r.verify.last.verdict} after ${r.verify.rounds} round(s)`);
+    for (const c of r.verify.last.commands) lines.push(`- \`${c.command}\` → exit ${c.exitCode}`);
+  }
+  if (r.selfReview) {
+    const s = r.selfReview;
+    lines.push(
+      '',
+      `**Self-review**: ${s.confirmed.length} confirmed, ${s.plausible.length} plausible, ${s.refuted} refuted${s.confirmed.length ? (s.fixed ? ' — confirmed issues fixed and re-verified' : ' — fixes NOT re-verified') : ''}`,
+    );
+    for (const f of sortBySeverity(s.plausible)) lines.push('', renderFinding(f));
+  }
+  if (r.implementSummary) lines.push('', '**Implementer summary**:', r.implementSummary.slice(0, 1500));
+  if (r.plan && (r.outcome === 'plan-only' || r.outcome === 'error')) {
+    lines.push('', '**Plan**:', `Goal: ${r.plan.goal}`, ...r.plan.steps.map((s, i) => `${i + 1}. ${s}`));
+    if (r.planAttack) lines.push('', `Plan attack: ${r.planAttack.verdict} — ${r.planAttack.evidence}`);
   }
   for (const n of r.notes) lines.push('', `note: ${n}`);
   lines.push('', `run: .fabel/runs/${r.runId}`);
