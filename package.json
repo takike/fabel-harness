@@ -1,0 +1,41 @@
+{
+  "name": "fabel-harness",
+  "version": "0.1.0",
+  "description": "Agent harness on top of Claude Code CLI that makes Opus/Sonnet reproduce Fable-class results through orchestration, adversarial verification, and structured workflows.",
+  "license": "MIT",
+  "author": "takike",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/takike/fabel-harness.git"
+  },
+  "type": "module",
+  "engines": {
+    "node": ">=18"
+  },
+  "bin": {
+    "fabel": "dist/cli.js"
+  },
+  "files": [
+    "dist",
+    "plugin",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "test": "vitest run",
+    "test:live": "FABEL_LIVE=1 vitest run test/live",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "prepublishOnly": "npm run build && npm test"
+  },
+  "dependencies": {
+    "commander": "^12.1.0",
+    "gray-matter": "^4.0.3",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.0",
+    "typescript": "^5.7.0",
+    "vitest": "^2.1.0"
+  }
+}
