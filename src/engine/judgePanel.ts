@@ -11,6 +11,8 @@ export interface JudgePanelContext {
   perStageUsd?: number;
   /** Extra rubric guidance appended to every judge prompt. */
   rubricNote?: string;
+  /** Permission rules for dontAsk mode (read-only Bash allowlist etc.). */
+  allowedTools?: string[];
 }
 
 export interface JudgePanelResult {
@@ -67,6 +69,7 @@ async function runSeat(
         bare: true,
         tools: ctx.judge.tools,
         permissionMode: 'dontAsk',
+        allowedTools: ctx.allowedTools,
         maxBudgetUsd: ctx.perStageUsd,
         jsonSchema: JUDGE_JSON_SCHEMA,
         cwd: ctx.cwd,

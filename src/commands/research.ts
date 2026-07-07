@@ -1,5 +1,5 @@
 import type { Command } from 'commander';
-import { loadConfig, modelForRole, effortForRole } from '../config.js';
+import { loadConfig, modelForRole, effortForRole, workerAllowedTools } from '../config.js';
 import { ClaudeRunner } from '../engine/claudeRunner.js';
 import { Budget, BudgetExceededError } from '../engine/budget.js';
 import { RunState } from '../engine/runState.js';
@@ -72,6 +72,7 @@ export async function runResearch(opts: ResearchOptions): Promise<ResearchReport
         bare: true,
         tools: ['Read', 'Glob', 'Grep'],
         permissionMode: 'dontAsk',
+        allowedTools: workerAllowedTools(config),
         maxBudgetUsd: config.budget.perStageUsd,
         jsonSchema: DECOMPOSE_JSON_SCHEMA,
         cwd,
@@ -93,6 +94,7 @@ export async function runResearch(opts: ResearchOptions): Promise<ResearchReport
         bare: true,
         tools: explorer.tools,
         permissionMode: 'dontAsk',
+        allowedTools: workerAllowedTools(config),
         maxBudgetUsd: config.budget.perStageUsd,
         cwd,
       });
@@ -111,6 +113,7 @@ export async function runResearch(opts: ResearchOptions): Promise<ResearchReport
           bare: true,
           tools: researcher.tools,
           permissionMode: 'dontAsk',
+          allowedTools: workerAllowedTools(config),
           maxBudgetUsd: config.budget.perStageUsd,
           jsonSchema: RESEARCH_JSON_SCHEMA,
           cwd,
@@ -137,6 +140,7 @@ export async function runResearch(opts: ResearchOptions): Promise<ResearchReport
         bare: true,
         tools: researcher.tools,
         permissionMode: 'dontAsk',
+        allowedTools: workerAllowedTools(config),
         maxBudgetUsd: config.budget.perStageUsd,
         jsonSchema: RESEARCH_JSON_SCHEMA,
         cwd,
@@ -162,6 +166,7 @@ export async function runResearch(opts: ResearchOptions): Promise<ResearchReport
           bare: true,
           tools: skeptic.tools,
           permissionMode: 'dontAsk',
+          allowedTools: workerAllowedTools(config),
           maxBudgetUsd: config.budget.perStageUsd,
           jsonSchema: VERDICT_JSON_SCHEMA,
           cwd,

@@ -72,6 +72,8 @@ const DEFAULT_TIMEOUT_MS = 15 * 60 * 1000;
 
 export class ClaudeRunner {
   private readonly bin: string;
+  /** Set when --bare hits an auth error (bare skips OAuth/helper credentials and needs ANTHROPIC_API_KEY). */
+  private bareDisabled = false;
 
   constructor(private readonly opts: RunnerOptions = {}) {
     this.bin = opts.claudeBin ?? process.env.FABEL_CLAUDE_BIN ?? 'claude';
@@ -79,7 +81,7 @@ export class ClaudeRunner {
 
   buildArgs(o: StageOptions): string[] {
     const args = ['-p', '--output-format', 'stream-json', '--verbose'];
-    if (o.bare) args.push('--bare');
+    if (o.bare && !this.bareDisabled) args.push('--bare');
     if (o.model) args.push('--model', o.model);
     if (o.effort) args.push('--effort', o.effort);
     if (o.maxTurns !== undefined) args.push('--max-turns', String(o.maxTurns));
@@ -102,7 +104,14 @@ export class ClaudeRunner {
     const eventFile = this.opts.runState?.eventFile(seq, o.label);
     this.opts.onProgress?.(`▸ ${o.label}`);
 
-    const result = await this.spawnOnce(o, eventFile);
+    let result = await this.spawnOnce(o, eventFile);
+    if (!result.ok && o.bare && !this.bareDisabled && /authentication/i.test(result.errorMessage ?? '')) {
+      // Subscription/OAuth auth is unavailable to --bare sessions; fall back for the
+      // rest of the run (costs the determinism of bare mode, keeps the run alive).
+      this.bareDisabled = true;
+      this.opts.onProgress?.('! --bare needs ANTHROPIC_API_KEY; falling back to non-bare worker calls for this run');
+      result = await this.spawnOnce(o, eventFile);
+    }
 
     this.opts.budget?.record(result.costUsd);
     this.opts.runState?.recordStage({

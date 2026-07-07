@@ -1,6 +1,6 @@
 import { spawnSync } from 'node:child_process';
 import type { Command } from 'commander';
-import { loadConfig, modelForRole, effortForRole } from '../config.js';
+import { loadConfig, modelForRole, effortForRole, workerAllowedTools } from '../config.js';
 import { ClaudeRunner } from '../engine/claudeRunner.js';
 import { Budget, BudgetExceededError } from '../engine/budget.js';
 import { RunState } from '../engine/runState.js';
@@ -88,6 +88,7 @@ export async function runReview(opts: ReviewOptions = {}): Promise<ReviewReport>
               bare: true,
               tools: reviewer.tools,
               permissionMode: 'dontAsk',
+              allowedTools: workerAllowedTools(config),
               maxBudgetUsd: config.budget.perStageUsd,
               jsonSchema: FINDINGS_JSON_SCHEMA,
               cwd,
@@ -122,6 +123,7 @@ export async function runReview(opts: ReviewOptions = {}): Promise<ReviewReport>
           model: modelForRole(config, 'skeptic'),
           effort: effortForRole(config, 'skeptic'),
           perStageUsd: config.budget.perStageUsd,
+          allowedTools: workerAllowedTools(config),
         });
       } catch (e) {
         if (e instanceof BudgetExceededError) {

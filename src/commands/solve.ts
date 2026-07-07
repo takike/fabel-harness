@@ -1,5 +1,5 @@
 import type { Command } from 'commander';
-import { loadConfig, modelForRole, effortForRole, type FabelConfig } from '../config.js';
+import { loadConfig, modelForRole, effortForRole, workerAllowedTools, type FabelConfig } from '../config.js';
 import { ClaudeRunner } from '../engine/claudeRunner.js';
 import { Budget, BudgetExceededError } from '../engine/budget.js';
 import { RunState } from '../engine/runState.js';
@@ -117,6 +117,7 @@ export async function runSolve(opts: SolveOptions): Promise<SolveReport> {
         bare: true,
         tools: personas.explorer.tools,
         permissionMode: 'dontAsk',
+        allowedTools: workerAllowedTools(config),
         maxBudgetUsd: config.budget.perStageUsd,
         cwd,
       });
@@ -135,6 +136,7 @@ export async function runSolve(opts: SolveOptions): Promise<SolveReport> {
         bare: true,
         tools: personas.planner.tools,
         permissionMode: 'dontAsk',
+        allowedTools: workerAllowedTools(config),
         maxBudgetUsd: config.budget.perStageUsd,
         jsonSchema: PLAN_JSON_SCHEMA,
         cwd,
@@ -157,6 +159,7 @@ export async function runSolve(opts: SolveOptions): Promise<SolveReport> {
         bare: true,
         tools: personas.skeptic.tools,
         permissionMode: 'dontAsk',
+        allowedTools: workerAllowedTools(config),
         maxBudgetUsd: config.budget.perStageUsd,
         jsonSchema: VERDICT_JSON_SCHEMA,
         cwd,
@@ -176,6 +179,7 @@ export async function runSolve(opts: SolveOptions): Promise<SolveReport> {
           bare: true,
           tools: personas.planner.tools,
           permissionMode: 'dontAsk',
+          allowedTools: workerAllowedTools(config),
           maxBudgetUsd: config.budget.perStageUsd,
           jsonSchema: PLAN_JSON_SCHEMA,
           cwd,
@@ -272,6 +276,7 @@ export async function runSolve(opts: SolveOptions): Promise<SolveReport> {
         bare: true,
         tools: personas.reviewer.tools,
         permissionMode: 'dontAsk',
+        allowedTools: workerAllowedTools(config),
         maxBudgetUsd: config.budget.perStageUsd,
         jsonSchema: FINDINGS_JSON_SCHEMA,
         cwd,
@@ -287,6 +292,7 @@ export async function runSolve(opts: SolveOptions): Promise<SolveReport> {
         model: modelForRole(config, 'skeptic'),
         effort: effortForRole(config, 'skeptic'),
         perStageUsd: config.budget.perStageUsd,
+        allowedTools: workerAllowedTools(config),
       });
       const confirmed = verdicts.filter((v) => v.verdict === 'CONFIRMED');
       const selfReview = {

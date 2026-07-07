@@ -19,6 +19,8 @@ export interface SkepticContext {
   effort?: string;
   perStageUsd?: number;
   concurrency?: number;
+  /** Permission rules for dontAsk mode (read-only Bash allowlist etc.). */
+  allowedTools?: string[];
 }
 
 /**
@@ -50,6 +52,7 @@ export async function verifyFindings(runner: ClaudeRunner, findings: readonly Fi
           bare: true,
           tools: ctx.skeptic.tools,
           permissionMode: 'dontAsk',
+          allowedTools: ctx.allowedTools,
           maxBudgetUsd: ctx.perStageUsd,
           jsonSchema: VERDICT_JSON_SCHEMA,
           cwd: ctx.cwd,

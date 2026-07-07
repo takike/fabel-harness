@@ -1,7 +1,7 @@
 import type { ClaudeRunner } from './claudeRunner.js';
 import type { AgentDef } from './promptSource.js';
 import type { FabelConfig } from '../config.js';
-import { modelForRole, effortForRole } from '../config.js';
+import { modelForRole, effortForRole, workerAllowedTools } from '../config.js';
 import { mapLimit } from './parallel.js';
 import {
   createCandidateWorktrees,
@@ -99,6 +99,7 @@ export async function runCandidatesPhase(
         effort: effortForRole(config, 'judge'),
         perStageUsd: config.budget.perStageUsd,
         rubricNote: `Task being solved: ${opts.task}`,
+        allowedTools: workerAllowedTools(config),
       },
       opts.judges,
     );
