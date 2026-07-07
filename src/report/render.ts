@@ -2,6 +2,7 @@ import { sortBySeverity } from '../engine/findings.js';
 import type { VerifiedFinding } from '../engine/skepticPool.js';
 import type { ReviewReport } from '../commands/review.js';
 import type { SolveReport } from '../commands/solve.js';
+import type { ResearchReport } from '../commands/research.js';
 
 /** Lead-with-outcome markdown reports. */
 
@@ -42,6 +43,31 @@ export function renderReviewReport(r: ReviewReport): string {
   return lines.join('\n');
 }
 
+export function renderResearchReport(r: ResearchReport): string {
+  const lines: string[] = [];
+  if (!r.answer) {
+    lines.push(`## Research incomplete — ${r.question} ($${r.costUsd.toFixed(2)})`);
+  } else {
+    lines.push(`## ${r.answer.answer.split('\n')[0]}`, '', r.answer.answer, '', '## Evidence');
+    for (const e of r.answer.evidence) {
+      const attack = r.attacks.find((a) => a.claim === e.claim);
+      lines.push(`- [${e.kind}] ${e.claim} (${e.citation})${attack ? ` — skeptic: ${attack.verdict}` : ''}`);
+    }
+    const refuted = r.attacks.filter((a) => a.verdict === 'REFUTED');
+    if (refuted.length) {
+      lines.push('', '## Refuted claims (answer weakened)');
+      for (const a of refuted) lines.push(`- ${a.claim} — ${a.evidence}`);
+    }
+    if (r.answer.gaps.length) {
+      lines.push('', '## Gaps');
+      for (const g of r.answer.gaps) lines.push(`- ${g}`);
+    }
+  }
+  for (const n of r.notes) lines.push('', `note: ${n}`);
+  lines.push('', `cost: $${r.costUsd.toFixed(2)} · run: .fabel/runs/${r.runId}`);
+  return lines.join('\n');
+}
+
 const SOLVE_HEADLINES: Record<SolveReport['outcome'], string> = {
   completed: 'Completed and verified',
   'plan-only': 'Plan ready (not implemented)',
@@ -53,6 +79,16 @@ const SOLVE_HEADLINES: Record<SolveReport['outcome'], string> = {
 export function renderSolveReport(r: SolveReport): string {
   const lines: string[] = [];
   lines.push(`## ${SOLVE_HEADLINES[r.outcome]} — ${r.task} ($${r.costUsd.toFixed(2)})`);
+
+  if (r.candidates) {
+    lines.push(
+      '',
+      `**Candidates**: winner ${r.candidates.winnerIndex} (${r.candidates.winnerAngle}) from ${r.candidates.perCandidate.length}, judged by ${r.candidates.panel.seats} seats — median ranks [${r.candidates.panel.medianRanks.join(', ')}]${r.candidates.merged ? '' : ' — MERGE FAILED'}`,
+    );
+    r.candidates.perCandidate.forEach((c, i) =>
+      lines.push(`- ${i}: ${c.angle} — ${c.implemented ? 'implemented' : 'FAILED'}${c.committed ? '' : ' (no changes)'}, verify ${c.verifyVerdict}`),
+    );
+  }
 
   if (r.verify?.last) {
     lines.push('', `**Verification**: ${r.verify.last.verdict} after ${r.verify.rounds} round(s)`);

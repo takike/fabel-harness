@@ -7,6 +7,7 @@ import { runDoctor, renderDoctor } from './commands/doctor.js';
 import { runVerify, renderVerify } from './commands/verify.js';
 import { registerReview } from './commands/review.js';
 import { registerSolve } from './commands/solve.js';
+import { registerResearch } from './commands/research.js';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const pkg = JSON.parse(readFileSync(join(here, '..', 'package.json'), 'utf8')) as { version: string };
@@ -53,6 +54,7 @@ program
 
 registerReview(program, progress);
 registerSolve(program, progress);
+registerResearch(program, progress);
 
 program.parseAsync(process.argv).catch((e: Error) => {
   process.stderr.write(`fabel: ${e.message}\n`);

@@ -1,0 +1,2 @@
+{"type":"system","subtype":"init","session_id":"dr-2"}
+{"type":"result","subtype":"success","is_error":false,"result":"answered","session_id":"dr-2","total_cost_usd":0.03,"structured_output":{"answer":"Retries are configured via RETRY_MAX env var, default 3.","evidence":[{"claim":"RETRY_MAX env var controls attempts","kind":"observed","citation":"src/retry.ts:5"}],"gaps":["no config file override found"]}}

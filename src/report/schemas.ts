@@ -143,6 +143,21 @@ export const PLAN_JSON_SCHEMA = {
   additionalProperties: false,
 } as const;
 
+/** Research question decomposition. */
+export const DecomposeSchema = z.object({
+  sub_questions: z.array(z.string().min(1)).min(1).max(5),
+});
+export type Decompose = z.infer<typeof DecomposeSchema>;
+
+export const DECOMPOSE_JSON_SCHEMA = {
+  type: 'object',
+  properties: {
+    sub_questions: { type: 'array', items: { type: 'string' }, minItems: 1, maxItems: 5 },
+  },
+  required: ['sub_questions'],
+  additionalProperties: false,
+} as const;
+
 /** Research synthesis / researcher answer. */
 export const ResearchAnswerSchema = z.object({
   answer: z.string().min(1),

@@ -1,0 +1,2 @@
+{"type":"system","subtype":"init","session_id":"jdg-h"}
+{"type":"result","subtype":"success","is_error":false,"result":"scored","session_id":"jdg-h","total_cost_usd":0.03,"structured_output":{"scores":{"correctness":9,"minimality":9,"convention_fit":8,"test_quality":8,"risk":9},"total":43,"justification":"clean minimal fix"}}

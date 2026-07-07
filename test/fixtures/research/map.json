@@ -1,0 +1,9 @@
+[
+  {"matchAll": ["Decompose this research question"], "scenario": "decompose.ndjson"},
+  {"matchAll": ["Your slice: LOCATE"], "scenario": "sweep.ndjson"},
+  {"matchAll": ["Sub-question: Where is retry logic"], "scenario": "deepread-1.ndjson"},
+  {"matchAll": ["Sub-question: How are retries configured"], "scenario": "deepread-2.ndjson"},
+  {"matchAll": ["Synthesize ONE answer"], "scenario": "synthesis.ndjson"},
+  {"matchAll": ["refute this research claim", "RETRY_MAX"], "scenario": "attack-refute.ndjson"},
+  {"matchAll": ["refute this research claim"], "scenario": "attack-confirm.ndjson"}
+]

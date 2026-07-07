@@ -7,6 +7,7 @@ import { defaultPluginDir, loadAgent, loadSkillBody, type AgentDef } from '../en
 import { mapLimit, defaultConcurrency } from '../engine/parallel.js';
 import { runVerifyFixLoop, type VerifyLoopResult } from '../engine/verifyLoop.js';
 import { verifyFindings, type VerifiedFinding } from '../engine/skepticPool.js';
+import { runCandidatesPhase, type CandidatesPhaseResult } from '../engine/candidates.js';
 import {
   PlanSchema,
   PLAN_JSON_SCHEMA,
@@ -30,6 +31,13 @@ export interface SolveOptions {
   model?: string;
   effort?: string;
   cmd?: string;
+  /** N>1 enables multi-candidate mode (worktrees + judge panel). */
+  candidates?: number;
+  judges?: number;
+  base?: string;
+  keepWorktrees?: boolean;
+  /** bypassPermissions inside disposable candidate worktrees only. */
+  yolo?: boolean;
   onProgress?: (line: string) => void;
 }
 
@@ -41,6 +49,7 @@ export interface SolveReport {
   implementSummary: string;
   verify: VerifyLoopResult | null;
   selfReview: { confirmed: VerifiedFinding[]; plausible: VerifiedFinding[]; refuted: number; fixed: boolean } | null;
+  candidates: CandidatesPhaseResult | null;
   costUsd: number;
   runId: string;
   notes: string[];
@@ -51,6 +60,7 @@ interface Personas {
   planner: AgentDef;
   reviewer: AgentDef;
   skeptic: AgentDef;
+  judge: AgentDef;
   doctrine: string;
   protocol: string;
 }
@@ -72,6 +82,7 @@ export async function runSolve(opts: SolveOptions): Promise<SolveReport> {
     planner: loadAgent(pluginDir, 'planner'),
     reviewer: loadAgent(pluginDir, 'reviewer'),
     skeptic: loadAgent(pluginDir, 'skeptic'),
+    judge: loadAgent(pluginDir, 'judge'),
     doctrine: loadSkillBody(pluginDir, 'doctrine'),
     protocol: loadSkillBody(pluginDir, 'verification-protocol'),
   };
@@ -88,6 +99,7 @@ export async function runSolve(opts: SolveOptions): Promise<SolveReport> {
     implementSummary: '',
     verify: null,
     selfReview: null,
+    candidates: null,
     costUsd: 0,
     runId: runState.id,
     notes: [],
@@ -180,35 +192,66 @@ export async function runSolve(opts: SolveOptions): Promise<SolveReport> {
       return finish(report, runState, budget);
     }
 
-    // 3. Implement — non-bare so project CLAUDE.md/settings load.
-    const implement = await runner.runStage({
-      label: 'implement',
-      prompt: [
-        `Implement the following task, following the plan exactly. If a step proves wrong, adapt minimally and say so in your summary.`,
-        `Task: ${opts.task}`,
-        `Plan:\n${JSON.stringify(plan, null, 2)}`,
-        `Explorer digests (facts about this codebase):\n${digest}`,
-        `Do NOT commit. Stop after the change is complete; verification runs separately.`,
-      ].join('\n\n'),
-      systemPrompt: personas.doctrine,
-      model: opts.model ?? modelForRole(config, 'implement'),
-      effort: opts.effort ?? effortForRole(config, 'implement'),
-      permissionMode: 'acceptEdits',
-      allowedTools: config.permissions.extraAllowedTools,
-      maxBudgetUsd: config.budget.perStageUsd,
-      cwd,
-    });
-    report.implementSummary = implement.resultText;
-    if (!implement.ok) {
-      report.notes.push(`implement stage failed: ${implement.errorMessage ?? 'unknown'}`);
-      return finish(report, runState, budget);
+    // 3. Implement — single session, or N worktree candidates + judge panel.
+    let implementSessionId: string | undefined;
+    if ((opts.candidates ?? 1) > 1) {
+      report.candidates = await runCandidatesPhase(
+        runner,
+        config,
+        { judge: personas.judge, doctrine: personas.doctrine },
+        {
+          task: opts.task,
+          planJson: JSON.stringify(plan, null, 2),
+          digest,
+          cwd,
+          runId: runState.id,
+          count: opts.candidates!,
+          judges: opts.judges ?? 3,
+          base: opts.base ?? 'HEAD',
+          keepWorktrees: opts.keepWorktrees,
+          model: opts.model,
+          effort: opts.effort,
+          yolo: opts.yolo,
+          cmd: opts.cmd,
+        },
+      );
+      report.notes.push(...report.candidates.notes);
+      report.implementSummary = `winner: candidate ${report.candidates.winnerIndex} (${report.candidates.winnerAngle}), median ranks [${report.candidates.panel.medianRanks.join(', ')}]`;
+      if (!report.candidates.merged) {
+        report.notes.push('winner merge failed — resolve manually or rerun with --keep-worktrees to inspect');
+        return finish(report, runState, budget);
+      }
+    } else {
+      const implement = await runner.runStage({
+        label: 'implement',
+        prompt: [
+          `Implement the following task, following the plan exactly. If a step proves wrong, adapt minimally and say so in your summary.`,
+          `Task: ${opts.task}`,
+          `Plan:\n${JSON.stringify(plan, null, 2)}`,
+          `Explorer digests (facts about this codebase):\n${digest}`,
+          `Do NOT commit. Stop after the change is complete; verification runs separately.`,
+        ].join('\n\n'),
+        systemPrompt: personas.doctrine,
+        model: opts.model ?? modelForRole(config, 'implement'),
+        effort: opts.effort ?? effortForRole(config, 'implement'),
+        permissionMode: 'acceptEdits',
+        allowedTools: config.permissions.extraAllowedTools,
+        maxBudgetUsd: config.budget.perStageUsd,
+        cwd,
+      });
+      report.implementSummary = implement.resultText;
+      if (!implement.ok) {
+        report.notes.push(`implement stage failed: ${implement.errorMessage ?? 'unknown'}`);
+        return finish(report, runState, budget);
+      }
+      implementSessionId = implement.sessionId;
     }
 
-    // 4. Verify-fix loop.
+    // 4. Verify-fix loop (in the main tree; fix rounds start fresh in candidate mode).
     report.verify = await runVerifyFixLoop(runner, {
       cwd,
       config,
-      sessionId: implement.sessionId,
+      sessionId: implementSessionId,
       maxRounds,
       cmd: opts.cmd,
       onProgress: opts.onProgress,
@@ -261,7 +304,7 @@ export async function runSolve(opts: SolveOptions): Promise<SolveReport> {
           permissionMode: 'acceptEdits',
           allowedTools: config.permissions.extraAllowedTools,
           maxBudgetUsd: config.budget.perStageUsd,
-          resume: report.verify.sessionId ?? implement.sessionId,
+          resume: report.verify.sessionId ?? implementSessionId,
           cwd,
         });
         if (fix.ok) {
@@ -304,16 +347,26 @@ export function registerSolve(program: Command, progress: (line: string) => void
     .description('full pipeline: explore → plan (skeptic-attacked) → implement → verify-fix loop → adversarial self-review')
     .argument('<task>', 'task description')
     .option('--plan-only', 'stop after printing the attacked plan')
+    .option('--candidates <n>', 'independent solution candidates in parallel worktrees', (v: string) => parseInt(v, 10))
+    .option('--judges <n>', 'judge panel seats (odd; default 3)', (v: string) => parseInt(v, 10))
+    .option('--base <ref>', 'base ref for candidate worktrees', 'HEAD')
+    .option('--keep-worktrees', 'keep candidate worktrees for inspection')
+    .option('--yolo', 'bypassPermissions inside disposable candidate worktrees')
     .option('--max-rounds <n>', 'verify-fix round cap', (v: string) => parseInt(v, 10))
     .option('--budget <usd>', 'cost ceiling', parseFloat)
     .option('--model <model>', 'implement-stage model override')
     .option('--effort <level>', 'implement-stage effort override')
     .option('--cmd <command>', 'verify command override')
     .option('--json', 'machine-readable output')
-    .action(async (task: string, opts: { planOnly?: boolean; maxRounds?: number; budget?: number; model?: string; effort?: string; cmd?: string; json?: boolean }) => {
+    .action(async (task: string, opts: { planOnly?: boolean; candidates?: number; judges?: number; base?: string; keepWorktrees?: boolean; yolo?: boolean; maxRounds?: number; budget?: number; model?: string; effort?: string; cmd?: string; json?: boolean }) => {
       const report = await runSolve({
         task,
         planOnly: opts.planOnly,
+        candidates: opts.candidates,
+        judges: opts.judges,
+        base: opts.base,
+        keepWorktrees: opts.keepWorktrees,
+        yolo: opts.yolo,
         maxRounds: opts.maxRounds,
         budgetUsd: opts.budget,
         model: opts.model,
