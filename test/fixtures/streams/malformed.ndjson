@@ -1,0 +1,4 @@
+{"type":"system","subtype":"init","session_id":"sess-mal"}
+this line is not json at all {{{
+{"type":"totally_new_event_kind","payload":{"x":1}}
+{"type":"result","subtype":"success","is_error":false,"result":"survived malformed lines","session_id":"sess-mal","total_cost_usd":0.005}

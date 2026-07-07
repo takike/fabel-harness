@@ -1,0 +1,2 @@
+{"type":"system","subtype":"init","session_id":"sess-con","model":"claude-opus-4-8"}
+{"type":"result","subtype":"success","is_error":false,"result":"VERDICT: CONFIRMED","session_id":"sess-con","total_cost_usd":0.03,"num_turns":5,"structured_output":{"verdict":"CONFIRMED","evidence":"traced src/a.ts:12 -> src/b.ts:40; repro exits 1"}}

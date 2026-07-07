@@ -1,0 +1,2 @@
+{"type":"system","subtype":"init","session_id":"sess-vp"}
+{"type":"result","subtype":"success","is_error":false,"result":"VERDICT: PASS","session_id":"sess-vp","total_cost_usd":0.04,"structured_output":{"verdict":"PASS","evidence":["node dist/cli.js --help → usage printed","npm test → 12 passed"],"unverified":[]}}
