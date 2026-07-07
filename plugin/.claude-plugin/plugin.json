@@ -1,0 +1,12 @@
+{
+  "name": "fabel",
+  "version": "0.1.0",
+  "description": "Fable-class orchestration harness: /fabel:solve, /fabel:review, /fabel:research, /fabel:verify plus the subagent crew (explorer, planner, reviewer, skeptic, judge, verifier, researcher).",
+  "author": {
+    "name": "takike"
+  },
+  "homepage": "https://github.com/takike/fabel-harness",
+  "repository": "https://github.com/takike/fabel-harness",
+  "license": "MIT",
+  "keywords": ["orchestration", "verification", "code-review", "agents"]
+}

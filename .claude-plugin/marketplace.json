@@ -1,0 +1,14 @@
+{
+  "name": "fabel-harness",
+  "owner": {
+    "name": "takike",
+    "url": "https://github.com/takike"
+  },
+  "plugins": [
+    {
+      "name": "fabel",
+      "source": "./plugin",
+      "description": "Fable-class orchestration for Opus/Sonnet: plan-first pipelines, adversarial verification, judge panels, loop-until-dry review, mandatory end-to-end verification."
+    }
+  ]
+}
