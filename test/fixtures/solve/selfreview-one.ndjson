@@ -1,0 +1,2 @@
+{"type":"system","subtype":"init","session_id":"sr-1"}
+{"type":"result","subtype":"success","is_error":false,"result":"1 finding","session_id":"sr-1","total_cost_usd":0.06,"structured_output":{"findings":[{"summary":"Missing default for options parameter causes TypeError","file":"src/greet.ts","line":3,"failure_scenario":"greet() with no args destructures undefined","severity":"major","confidence":"high"}]}}

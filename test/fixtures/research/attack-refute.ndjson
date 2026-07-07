@@ -1,0 +1,2 @@
+{"type":"system","subtype":"init","session_id":"ratk-2"}
+{"type":"result","subtype":"success","is_error":false,"result":"REFUTED","session_id":"ratk-2","total_cost_usd":0.04,"structured_output":{"verdict":"REFUTED","evidence":"src/retry.ts:5 reads RETRY_ATTEMPTS, not RETRY_MAX; default is 5"}}

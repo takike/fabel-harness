@@ -1,0 +1,2 @@
+{"type":"system","subtype":"init","session_id":"plan-1"}
+{"type":"result","subtype":"success","is_error":false,"result":"plan ready","session_id":"plan-1","total_cost_usd":0.08,"structured_output":{"goal":"greet() supports a name argument","constraints":["keep default behavior for no-arg calls (src/greet.ts:3)"],"steps":["add optional name param to greet() in src/greet.ts","update test/greet.test.js with named case"],"test_strategy":"npm test covers both cases","verification":"node -e \"console.log(require('./src/greet'))\"","risks":["callers passing undefined"]}}

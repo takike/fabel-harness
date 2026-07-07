@@ -1,0 +1,2 @@
+{"type":"system","subtype":"init","session_id":"sess-ref","model":"claude-opus-4-8"}
+{"type":"result","subtype":"success","is_error":false,"result":"VERDICT: REFUTED","session_id":"sess-ref","total_cost_usd":0.02,"num_turns":4,"structured_output":{"verdict":"REFUTED","evidence":"guard at src/x.ts:10 makes the scenario impossible"}}

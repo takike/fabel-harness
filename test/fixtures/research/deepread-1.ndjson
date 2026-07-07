@@ -1,0 +1,2 @@
+{"type":"system","subtype":"init","session_id":"dr-1"}
+{"type":"result","subtype":"success","is_error":false,"result":"answered","session_id":"dr-1","total_cost_usd":0.03,"structured_output":{"answer":"Retry logic lives in withRetry() which wraps fetch calls with exponential backoff.","evidence":[{"claim":"withRetry wraps all outbound fetches","kind":"observed","citation":"src/retry.ts:12"}],"gaps":[]}}

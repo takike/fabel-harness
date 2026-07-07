@@ -1,0 +1,2 @@
+{"type":"system","subtype":"init","session_id":"sess-bad"}
+{"type":"result","subtype":"success","is_error":false,"result":"VERDICT: MAYBE","session_id":"sess-bad","total_cost_usd":0.01,"structured_output":{"verdict":"MAYBE","evidence":""}}

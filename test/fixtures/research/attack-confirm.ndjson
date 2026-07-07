@@ -1,0 +1,2 @@
+{"type":"system","subtype":"init","session_id":"ratk-1"}
+{"type":"result","subtype":"success","is_error":false,"result":"CONFIRMED","session_id":"ratk-1","total_cost_usd":0.04,"structured_output":{"verdict":"CONFIRMED","evidence":"src/retry.ts:12 wraps fetch in all three call sites"}}

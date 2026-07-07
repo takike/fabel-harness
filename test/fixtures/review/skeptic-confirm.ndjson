@@ -1,0 +1,2 @@
+{"type":"system","subtype":"init","session_id":"skp-c"}
+{"type":"result","subtype":"success","is_error":false,"result":"CONFIRMED","session_id":"skp-c","total_cost_usd":0.06,"structured_output":{"verdict":"CONFIRMED","evidence":"traced src/page.ts:42 slice(0, limit+1); repro: node /tmp/r.js prints 11 rows → exit 0"}}

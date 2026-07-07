@@ -1,0 +1,2 @@
+{"type":"system","subtype":"init","session_id":"sess-exp"}
+{"type":"result","subtype":"success","is_error":false,"result":"pricey work done","session_id":"sess-exp","total_cost_usd":5.0}

@@ -1,0 +1,2 @@
+{"type":"system","subtype":"init","session_id":"swp-1"}
+{"type":"result","subtype":"success","is_error":false,"result":"1. **Map**\n- src/retry.ts:12 — withRetry() — the retry wrapper","session_id":"swp-1","total_cost_usd":0.01}

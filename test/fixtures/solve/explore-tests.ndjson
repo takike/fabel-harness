@@ -1,0 +1,2 @@
+{"type":"system","subtype":"init","session_id":"exp-t"}
+{"type":"result","subtype":"success","is_error":false,"result":"1. **Map**\n- test/greet.test.js:1 — run with npm test","session_id":"exp-t","total_cost_usd":0.01}

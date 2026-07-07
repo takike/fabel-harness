@@ -1,0 +1,2 @@
+{"type":"system","subtype":"init","session_id":"atk-2"}
+{"type":"result","subtype":"success","is_error":false,"result":"REFUTED","session_id":"atk-2","total_cost_usd":0.05,"structured_output":{"verdict":"REFUTED","evidence":"no callers rely on the old signature; test_strategy covers the boundary"}}

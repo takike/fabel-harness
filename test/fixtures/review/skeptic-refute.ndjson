@@ -1,0 +1,2 @@
+{"type":"system","subtype":"init","session_id":"skp-r"}
+{"type":"result","subtype":"success","is_error":false,"result":"REFUTED","session_id":"skp-r","total_cost_usd":0.05,"structured_output":{"verdict":"REFUTED","evidence":"src/db.ts:8 passes name through escapeIdent() before concatenation; injection impossible"}}

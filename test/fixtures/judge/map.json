@@ -1,0 +1,6 @@
+[
+  {"matchAll": ["minimal-fix-only-marker"], "scenario": "judge-high.ndjson"},
+  {"matchAll": ["global-cache-marker"], "scenario": "judge-low.ndjson"},
+  {"matchAll": ["middling-marker"], "scenario": "judge-mid.ndjson"},
+  {"matchAll": ["empty diff"], "scenario": "judge-mid.ndjson"}
+]

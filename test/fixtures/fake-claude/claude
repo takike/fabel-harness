@@ -1,0 +1,97 @@
+#!/usr/bin/env node
+/**
+ * Fake `claude` binary for offline tests. Selected via PATH or FABEL_CLAUDE_BIN.
+ *
+ * Modes:
+ * - `--version` → prints a version string.
+ * - FAKE_CLAUDE_SCENARIO=<file.ndjson> → replays that stream to stdout.
+ * - FAKE_CLAUDE_DIR=<dir> → consumes <dir>/NNN-*.ndjson in order across
+ *   invocations (counter persisted in <dir>/.counter) so multi-stage pipelines
+ *   can be scripted call-by-call.
+ * - FAKE_CLAUDE_MAP=<file.json> → array of {matchAll: [substr...], scenario}
+ *   checked against stdin (the prompt); first entry whose substrings ALL match
+ *   wins. Deterministic under parallel calls, unlike DIR mode. Relative
+ *   scenario paths resolve against the map file's directory.
+ * - FAKE_CLAUDE_ARGS_DIR=<dir> → records argv + stdin of each call as
+ *   <dir>/call-NNN.json for flag/prompt assertions.
+ *
+ * Scenario file directives (first line, optional):
+ *   #exit:<code>  → exit with that code after replaying the remaining lines.
+ */
+const fs = require('node:fs');
+const path = require('node:path');
+
+const argv = process.argv.slice(2);
+
+if (argv.includes('--version')) {
+  process.stdout.write('9.9.9-fake (Claude Code)\n');
+  process.exit(0);
+}
+
+let stdin = '';
+try {
+  stdin = fs.readFileSync(0, 'utf8');
+} catch {
+  /* no stdin */
+}
+
+function pickScenario() {
+  if (process.env.FAKE_CLAUDE_SCENARIO) return process.env.FAKE_CLAUDE_SCENARIO;
+  if (process.env.FAKE_CLAUDE_MAP) {
+    const mapFile = process.env.FAKE_CLAUDE_MAP;
+    const entries = JSON.parse(fs.readFileSync(mapFile, 'utf8'));
+    for (const entry of entries) {
+      if (entry.matchAll.every((s) => stdin.includes(s))) {
+        return path.resolve(path.dirname(mapFile), entry.scenario);
+      }
+    }
+    process.stderr.write(`fake-claude: no map entry matched prompt: ${stdin.slice(0, 200)}\n`);
+    process.exit(66);
+  }
+  const dir = process.env.FAKE_CLAUDE_DIR;
+  if (!dir) {
+    process.stderr.write('fake-claude: set FAKE_CLAUDE_SCENARIO or FAKE_CLAUDE_DIR\n');
+    process.exit(64);
+  }
+  const counterFile = path.join(dir, '.counter');
+  let n = 0;
+  try {
+    n = parseInt(fs.readFileSync(counterFile, 'utf8'), 10) || 0;
+  } catch {
+    /* first call */
+  }
+  fs.writeFileSync(counterFile, String(n + 1));
+  const files = fs
+    .readdirSync(dir)
+    .filter((f) => f.endsWith('.ndjson'))
+    .sort();
+  if (n >= files.length) {
+    process.stderr.write(`fake-claude: scenario queue exhausted (call ${n + 1} of ${files.length})\n`);
+    process.exit(65);
+  }
+  return path.join(dir, files[n]);
+}
+
+const scenario = pickScenario();
+
+if (process.env.FAKE_CLAUDE_ARGS_DIR) {
+  const dir = process.env.FAKE_CLAUDE_ARGS_DIR;
+  fs.mkdirSync(dir, { recursive: true });
+  // Unique name even under parallel invocations.
+  const tag = `${Date.now()}-${process.pid}-${Math.random().toString(36).slice(2, 6)}`;
+  fs.writeFileSync(
+    path.join(dir, `call-${tag}.json`),
+    JSON.stringify({ argv, stdin, scenario: path.basename(scenario), cwd: process.cwd() }, null, 2),
+  );
+}
+
+let lines = fs.readFileSync(scenario, 'utf8').split('\n');
+let exitCode = 0;
+if (lines[0] && lines[0].startsWith('#exit:')) {
+  exitCode = parseInt(lines[0].slice(6), 10);
+  lines = lines.slice(1);
+}
+for (const line of lines) {
+  if (line.trim()) process.stdout.write(line + '\n');
+}
+process.exit(exitCode);

@@ -1,0 +1,2 @@
+{"type":"system","subtype":"init","session_id":"jdg-m"}
+{"type":"result","subtype":"success","is_error":false,"result":"scored","session_id":"jdg-m","total_cost_usd":0.03,"structured_output":{"scores":{"correctness":7,"minimality":7,"convention_fit":7,"test_quality":6,"risk":7},"total":34,"justification":"works but noisy diff"}}

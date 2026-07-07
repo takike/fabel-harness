@@ -1,0 +1,2 @@
+{"type":"system","subtype":"init","session_id":"dec-1"}
+{"type":"result","subtype":"success","is_error":false,"result":"decomposed","session_id":"dec-1","total_cost_usd":0.02,"structured_output":{"sub_questions":["Where is retry logic implemented?","How are retries configured?"]}}

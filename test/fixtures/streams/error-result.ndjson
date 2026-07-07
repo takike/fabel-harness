@@ -1,0 +1,2 @@
+{"type":"system","subtype":"init","session_id":"sess-err"}
+{"type":"result","subtype":"error_during_execution","is_error":true,"result":"Execution failed: something broke","session_id":"sess-err","total_cost_usd":0.001}

@@ -1,0 +1,2 @@
+{"type":"system","subtype":"init","session_id":"sess-vpart"}
+{"type":"result","subtype":"success","is_error":false,"result":"VERDICT: PARTIAL","session_id":"sess-vpart","total_cost_usd":0.04,"structured_output":{"verdict":"PARTIAL","evidence":["typecheck only"],"unverified":["runtime behavior not exercised"]}}
