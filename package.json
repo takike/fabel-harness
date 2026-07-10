@@ -8,6 +8,20 @@
     "type": "git",
     "url": "git+https://github.com/takike/fabel-harness.git"
   },
+  "homepage": "https://github.com/takike/fabel-harness#readme",
+  "bugs": {
+    "url": "https://github.com/takike/fabel-harness/issues"
+  },
+  "keywords": [
+    "claude",
+    "claude-code",
+    "agent",
+    "orchestration",
+    "harness",
+    "code-review",
+    "verification",
+    "llm"
+  ],
   "type": "module",
   "engines": {
     "node": ">=18"
