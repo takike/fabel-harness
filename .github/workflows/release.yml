@@ -1,11 +1,17 @@
 name: Release
 
-# Publishes to npm when a v* tag is pushed (e.g. v0.1.0).
-# Requires the NPM_TOKEN repository secret (npm automation token).
+# Publishes to npm when a version tag is pushed (e.g. v0.1.0).
+#
+# Auth: set the NPM_TOKEN repository secret to an npm *granular access token*
+# with read/write access to this package (classic automation tokens were
+# discontinued by npm in 2025; granular tokens expire — max ~90 days — so
+# rotate before releasing). Alternatively migrate to npm trusted publishing
+# (OIDC, no token): configure the trusted publisher on npmjs.com and upgrade
+# the npm CLI in this job to >= 11.5.1.
 
 on:
   push:
-    tags: ['v*']
+    tags: ['v[0-9]*']
 
 permissions:
   contents: read
@@ -15,28 +21,44 @@ jobs:
   publish:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v5
         with:
           node-version: '22'
           cache: npm
           registry-url: https://registry.npmjs.org
 
-      - name: Install
-        run: npm ci
-
-      - name: Tag matches package version
+      - name: Tag matches package and plugin versions
         run: |
+          set -euo pipefail
           PKG_VERSION="$(node -p "require('./package.json').version")"
+          PLUGIN_VERSION="$(node -p "require('./plugin/.claude-plugin/plugin.json').version")"
           TAG_VERSION="${GITHUB_REF_NAME#v}"
           if [ "$PKG_VERSION" != "$TAG_VERSION" ]; then
             echo "package.json version ($PKG_VERSION) != tag ($TAG_VERSION)" >&2
             exit 1
           fi
+          if [ "$PLUGIN_VERSION" != "$TAG_VERSION" ]; then
+            echo "plugin/.claude-plugin/plugin.json version ($PLUGIN_VERSION) != tag ($TAG_VERSION)" >&2
+            exit 1
+          fi
 
-      # prepublishOnly runs build + the offline test suite.
+      - name: Install
+        run: npm ci
+
+      # Prereleases (any version containing '-') go to the 'next' dist-tag so
+      # `npm install fabel-harness` never resolves to an RC.
+      - name: Resolve dist-tag
+        run: |
+          set -euo pipefail
+          case "${GITHUB_REF_NAME#v}" in
+            *-*) echo "DIST_TAG=next" >> "$GITHUB_ENV" ;;
+            *)   echo "DIST_TAG=latest" >> "$GITHUB_ENV" ;;
+          esac
+
+      # prepublishOnly runs a clean build + the offline test suite.
       - name: Publish
-        run: npm publish --provenance --access public
+        run: npm publish --provenance --access public --tag "$DIST_TAG"
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

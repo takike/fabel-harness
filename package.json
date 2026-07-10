@@ -24,7 +24,7 @@
   ],
   "type": "module",
   "engines": {
-    "node": ">=18"
+    "node": ">=20"
   },
   "bin": {
     "fabel": "dist/cli.js"
@@ -32,6 +32,7 @@
   "files": [
     "dist",
     "plugin",
+    "docs",
     "README.md",
     "LICENSE"
   ],
@@ -40,7 +41,7 @@
     "test": "vitest run",
     "test:live": "FABEL_LIVE=1 vitest run test/live",
     "typecheck": "tsc -p tsconfig.json --noEmit",
-    "prepublishOnly": "npm run build && npm test"
+    "prepublishOnly": "rm -rf dist && npm run build && npm test"
   },
   "dependencies": {
     "commander": "^12.1.0",
